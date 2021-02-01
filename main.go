@@ -2,6 +2,11 @@ package main
 
 import (
 	"fmt"
+	. "github.com/ivaaaan/smug/pkg/commander"
+	. "github.com/ivaaaan/smug/pkg/config"
+	. "github.com/ivaaaan/smug/pkg/context"
+	. "github.com/ivaaaan/smug/pkg/smug"
+	. "github.com/ivaaaan/smug/pkg/tmux"
 	"log"
 	"os"
 	"path/filepath"
@@ -64,9 +69,9 @@ func main() {
 		logger = log.New(logFile, "", 0)
 	}
 
-	commander := DefaultCommander{logger}
-	tmux := Tmux{commander}
-	smug := Smug{tmux, commander}
+	commander := DefaultCommander{Logger: logger}
+	tmux := Tmux{Commander: commander}
+	smug := Smug{Tmux: tmux, Commander: commander}
 	context := CreateContext()
 
 	switch options.Command {

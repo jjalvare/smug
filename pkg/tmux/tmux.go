@@ -1,6 +1,7 @@
-package main
+package tmux
 
 import (
+	. "github.com/ivaaaan/smug/pkg/commander"
 	"os"
 	"os/exec"
 )
@@ -19,35 +20,35 @@ const (
 )
 
 type Tmux struct {
-	commander Commander
+	Commander Commander
 }
 
 func (tmux Tmux) NewSession(name string, root string, windowName string) (string, error) {
 	cmd := exec.Command("tmux", "new", "-Pd", "-s", name, "-n", windowName, "-c", root)
-	return tmux.commander.Exec(cmd)
+	return tmux.Commander.Exec(cmd)
 }
 
 func (tmux Tmux) SessionExists(name string) bool {
 	cmd := exec.Command("tmux", "has-session", "-t", name)
-	res, err := tmux.commander.Exec(cmd)
+	res, err := tmux.Commander.Exec(cmd)
 	return res == "" && err == nil
 }
 
 func (tmux Tmux) KillWindow(target string) error {
 	cmd := exec.Command("tmux", "kill-window", "-t", target)
-	_, err := tmux.commander.Exec(cmd)
+	_, err := tmux.Commander.Exec(cmd)
 	return err
 }
 
 func (tmux Tmux) NewWindow(target string, name string, root string) (string, error) {
 	cmd := exec.Command("tmux", "neww", "-Pd", "-t", target, "-n", name, "-c", root)
 
-	return tmux.commander.Exec(cmd)
+	return tmux.Commander.Exec(cmd)
 }
 
 func (tmux Tmux) SendKeys(target string, command string) error {
 	cmd := exec.Command("tmux", "send-keys", "-t", target, command, "Enter")
-	return tmux.commander.ExecSilently(cmd)
+	return tmux.Commander.ExecSilently(cmd)
 }
 
 func (tmux Tmux) Attach(target string, stdin *os.File, stdout *os.File, stderr *os.File) error {
@@ -57,12 +58,12 @@ func (tmux Tmux) Attach(target string, stdin *os.File, stdout *os.File, stderr *
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
 
-	return tmux.commander.ExecSilently(cmd)
+	return tmux.Commander.ExecSilently(cmd)
 }
 
 func (tmux Tmux) RenumberWindows(target string) error {
 	cmd := exec.Command("tmux", "move-window", "-r", "-s", target, "-t", target)
-	_, err := tmux.commander.Exec(cmd)
+	_, err := tmux.Commander.Exec(cmd)
 	return err
 }
 
@@ -80,7 +81,7 @@ func (tmux Tmux) SplitWindow(target string, splitType string, root string) (stri
 
 	cmd := exec.Command("tmux", args...)
 
-	pane, err := tmux.commander.Exec(cmd)
+	pane, err := tmux.Commander.Exec(cmd)
 	if err != nil {
 		return "", err
 	}
@@ -90,15 +91,15 @@ func (tmux Tmux) SplitWindow(target string, splitType string, root string) (stri
 
 func (tmux Tmux) SelectLayout(target string, layoutType string) (string, error) {
 	cmd := exec.Command("tmux", "select-layout", "-t", target, layoutType)
-	return tmux.commander.Exec(cmd)
+	return tmux.Commander.Exec(cmd)
 }
 
 func (tmux Tmux) StopSession(target string) (string, error) {
 	cmd := exec.Command("tmux", "kill-session", "-t", target)
-	return tmux.commander.Exec(cmd)
+	return tmux.Commander.Exec(cmd)
 }
 
 func (tmux Tmux) SwitchClient(target string) error {
 	cmd := exec.Command("tmux", "switch-client", "-t", target)
-	return tmux.commander.ExecSilently(cmd)
+	return tmux.Commander.ExecSilently(cmd)
 }

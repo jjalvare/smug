@@ -1,7 +1,15 @@
-package main
+package smug
 
 import (
 	"errors"
+	"fmt"
+	. "github.com/ivaaaan/smug/pkg/commander"
+	. "github.com/ivaaaan/smug/pkg/config"
+	. "github.com/ivaaaan/smug/pkg/context"
+	. "github.com/ivaaaan/smug/pkg/tmux"
+	"log"
+	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/spf13/pflag"
@@ -39,6 +47,78 @@ const (
 var NewFlagSet = func(cmd string) *pflag.FlagSet {
 	f := pflag.NewFlagSet(cmd, pflag.ContinueOnError)
 	return f
+}
+
+func RunOptions(options Options) {
+	userConfigDir := filepath.Join(ExpandPath("~/"), ".config/smug")
+
+	var configPath string
+	if options.Config != "" {
+		configPath = options.Config
+	} else {
+		configPath = filepath.Join(userConfigDir, options.Project+".yml")
+	}
+
+	var logger *log.Logger
+	if options.Debug {
+		logFile, err := os.Create(filepath.Join(userConfigDir, "smug.log"))
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err.Error())
+			os.Exit(1)
+		}
+		logger = log.New(logFile, "", 0)
+	}
+
+	commander := DefaultCommander{Logger: logger}
+	tmux := Tmux{Commander: commander}
+	smug := Smug{Tmux: tmux, Commander: commander}
+	context := CreateContext()
+
+	switch options.Command {
+	case CommandStart:
+		if len(options.Windows) == 0 {
+			fmt.Println("Starting a new session...")
+		} else {
+			fmt.Println("Starting new windows...")
+		}
+		config, err := GetConfig(configPath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, err.Error())
+			os.Exit(1)
+		}
+
+		err = smug.Start(config, options, context)
+		if err != nil {
+			fmt.Println("Oops, an error occurred! Rolling back...")
+			smug.Stop(config, options, context)
+			os.Exit(1)
+		}
+	case CommandStop:
+		if len(options.Windows) == 0 {
+			fmt.Println("Terminating session...")
+		} else {
+			fmt.Println("Killing windows...")
+		}
+		config, err := GetConfig(configPath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, err.Error())
+			os.Exit(1)
+		}
+
+		err = smug.Stop(config, options, context)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, err.Error())
+			os.Exit(1)
+		}
+	case CommandNew:
+	case CommandEdit:
+		err := EditConfig(configPath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, err.Error())
+			os.Exit(1)
+		}
+	}
+
 }
 
 func ParseOptions(argv []string, helpRequested func()) (Options, error) {

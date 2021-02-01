@@ -1,6 +1,9 @@
-package main
+package smug
 
 import (
+	. "github.com/ivaaaan/smug/pkg/config"
+	. "github.com/ivaaaan/smug/pkg/context"
+	. "github.com/ivaaaan/smug/pkg/tmux"
 	"os/exec"
 	"reflect"
 	"strings"
@@ -309,7 +312,7 @@ func TestStartSession(t *testing.T) {
 
 		t.Run("test start session", func(t *testing.T) {
 			commander := &MockCommander{[]string{}, params.commanderOutput}
-			tmux := Tmux{commander}
+			tmux := Tmux{Commander: commander}
 			smug := Smug{tmux, commander}
 
 			err := smug.Start(params.config, params.options, params.context)
@@ -324,7 +327,7 @@ func TestStartSession(t *testing.T) {
 
 		t.Run("test stop session", func(t *testing.T) {
 			commander := &MockCommander{[]string{}, params.commanderOutput}
-			tmux := Tmux{commander}
+			tmux := Tmux{Commander: commander}
 			smug := Smug{tmux, commander}
 
 			err := smug.Stop(params.config, params.options, params.context)
