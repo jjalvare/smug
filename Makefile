@@ -4,10 +4,10 @@ build:
 	go build -o smug *.go
 
 test:
-	go test .
+	go test ./pkg/commander/ ./pkg/config/ ./pkg/context/  ./pkg/smug/ ./pkg/tmux/
 
 coverage:
-	go test -coverprofile=coverage.out
+	go test -coverprofile=coverage.out ./pkg/commander/ ./pkg/config/ ./pkg/context/  ./pkg/smug/ ./pkg/tmux/
 	go tool cover -html=coverage.out
 
 release:
